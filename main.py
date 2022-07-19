@@ -157,6 +157,7 @@ def formant_averager(word_dict):
     
 def plot_vowels(sound_avgs): 
     
+    
     f1_vals,f2_vals = [], []
     for x in sound_avgs: 
         f1_vals.append(sound_avgs[x][0])
@@ -164,20 +165,24 @@ def plot_vowels(sound_avgs):
 
     x = np.array(f2_vals)
     y = np.array(f1_vals)
-    
+
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1)
+    # ax.set_title('/nVowel Space', position = 'bottom')
+    ax.set_ylabel('F1')
+    ax.set_xlabel('F2')
     ax.xaxis.set_ticks_position('top')
-    
+    ax.xaxis.set_label_position('top')
+    ax.yaxis.set_ticks_position('right')
+    ax.yaxis.set_label_position('right')
     ax.invert_yaxis()
     ax.invert_xaxis()
-    ax.scatter(x, y, linestyle='None')
-
-    plt.xlabel("F2")
-    plt.ylabel("F1")
-    plt.scatter(x, y)
+    
     vowels = ['i', 'ɪ', 'ɛ', 'æ', 'ɑ', 'ɔ', 'ʌ', 'ʊ', 'u', 'aʊ', 'oj', 'aj', 'ow', 'aj', 'ej', 'ɚ', 'ə'] 
 
+    ax.scatter(x, y, linestyle='None', c = x, cmap = 'gist_rainbow_r')
+
+    print(enumerate(vowels))
     for i, label in enumerate(vowels):
         plt.annotate(label, (x[i], y[i]))
     plt.show()
