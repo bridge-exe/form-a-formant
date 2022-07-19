@@ -20,7 +20,7 @@ import wave
 
 decible_threshold = 50 #given the nature of the words given, the decible of the /h/ sound and /d/ sounds will be far quieter than the nuclear vowel
 silence_tolerance = 0.2
-file = '17vowelstest2.wav'
+file = '17vowelstest.wav'
 
 def acquire_formants(file_path, speaker_gen = 'f'):
   f1_list, f2_list, f3_list  = [], [], []
@@ -153,22 +153,26 @@ def formant_averager(word_dict):
         sound_avgs[count] = sound_avg
 
     sound_avgs[count+1] = np.mean(np.array([avgs_dict[i-3], avgs_dict[i-2], avgs_dict[i-1]]), axis=0) #just adding the last one instead of fixing oob error lmao   
+
     return sound_avgs 
     
-def plot_vowels(sound_avgs): 
-    
-    
+def plot_vowels(sound_avgs):     
     f1_vals,f2_vals = [], []
     for x in sound_avgs: 
         f1_vals.append(sound_avgs[x][0])
         f2_vals.append(sound_avgs[x][1])
 
-    x = np.array(f2_vals)
-    y = np.array(f1_vals)
+
+    x,y = np.array(f2_vals), np.array(f1_vals)
 
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1)
-    # ax.set_title('/nVowel Space', position = 'bottom')
+
+    vowels = ['i', 'ɪ', 'ɛ', 'æ', 'ɑ', 'ɔ', 'ʌ', 'ʊ', 'u', 'aʊ', 'oj', 'aj', 'ow', 'aj', 'ej', 'ɚ', 'ə'] 
+    # print(len(vowels))
+    print(x,y)
+    ax.scatter(x, y, c = x, cmap = 'gist_rainbow_r', alpha = 0.5)
+    
     ax.set_ylabel('F1')
     ax.set_xlabel('F2')
     ax.xaxis.set_ticks_position('top')
@@ -178,20 +182,12 @@ def plot_vowels(sound_avgs):
     ax.invert_yaxis()
     ax.invert_xaxis()
     
-    vowels = ['i', 'ɪ', 'ɛ', 'æ', 'ɑ', 'ɔ', 'ʌ', 'ʊ', 'u', 'aʊ', 'oj', 'aj', 'ow', 'aj', 'ej', 'ɚ', 'ə'] 
+   
 
-    ax.scatter(x, y, linestyle='None', c = x, cmap = 'gist_rainbow_r')
-
-    print(enumerate(vowels))
     for i, label in enumerate(vowels):
         plt.annotate(label, (x[i], y[i]))
     plt.show()
     
-    
-    
-            
-        
-        
     
 file_path = 'c:/Users/bridg/Documents/GitHub/form-a-formant/'+file
 # formants = acquire_formants(file_path)    
