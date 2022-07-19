@@ -7,6 +7,12 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 
+import seaborn as sns
+import pandas as pd
+import matplotlib.pyplot as plt
+
+
+
 # import pyaudio 
 import wave
 # audio = pyaudio.PyAudio()
@@ -124,7 +130,7 @@ def get_word_formants(word_list):
             
     return word_dict
 
-def formant_finder(word_dict):    
+def formant_averager(word_dict):    
     avgs_dict = {}
     count = 0 
     
@@ -142,25 +148,45 @@ def formant_finder(word_dict):
     count = 0
     
     for i in range(1, len(avgs_dict)-1, 3): 
-        count+=1
-        print(i)
-        # if (avgs_dict[i+2] == acgs_dict['stop']): 
-        #     word.append(time_stamps[i])
-        #     word_list.append(word)
-        #     break
-        
+        count+=1        
         sound_avg = np.mean(np.array([avgs_dict[i], avgs_dict[i+1], avgs_dict[i+2]]), axis=0) 
         sound_avgs[count] = sound_avg
 
-    sound_avgs[count+1] = np.mean(np.array([avgs_dict[i-3], avgs_dict[i-2], avgs_dict[i-1]]), axis=0) 
-    
-    for x in sound_avgs: 
-        print(x)
+    sound_avgs[count+1] = np.mean(np.array([avgs_dict[i-3], avgs_dict[i-2], avgs_dict[i-1]]), axis=0) #just adding the last one instead of fixing oob error lmao   
     return sound_avgs 
     
+def plot_vowels(sound_avgs): 
     
-# def plotting(sound_avgs): 
+    f1_vals,f2_vals = [], []
+    for x in sound_avgs: 
+        f1_vals.append(sound_avgs[x][0])
+        f2_vals.append(sound_avgs[x][1])
+
+    x = np.array(f2_vals)
+    y = np.array(f1_vals)
     
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+    ax.xaxis.set_ticks_position('top')
+    
+    ax.invert_yaxis()
+    ax.invert_xaxis()
+    ax.scatter(x, y, linestyle='None')
+
+    plt.xlabel("F2")
+    plt.ylabel("F1")
+    plt.scatter(x, y)
+    vowels = ['i', 'ɪ', 'ɛ', 'æ', 'ɑ', 'ɔ', 'ʌ', 'ʊ', 'u', 'aʊ', 'oj', 'aj', 'ow', 'aj', 'ej', 'ɚ', 'ə'] 
+
+    for i, label in enumerate(vowels):
+        plt.annotate(label, (x[i], y[i]))
+    plt.show()
+    
+    
+    
+            
+        
+        
     
 file_path = 'c:/Users/bridg/Documents/GitHub/form-a-formant/'+file
 # formants = acquire_formants(file_path)    
@@ -170,7 +196,9 @@ word_list = get_words(file_path)
 
 word_formants = get_word_formants(word_list)
 
-formant_averages = formant_finder(word_formants)
+formant_averages = formant_averager(word_formants)
+
+plot_vowels(formant_averages)
 
 
 
