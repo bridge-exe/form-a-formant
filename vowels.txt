@@ -1,24 +1,24 @@
 Monopthongs
-heed = '/hid/' 
-hid = '/hɪd/' 
-head = '/hɛd/'
-had = '/hæd/' 
-hod = '/hɑd/'
-hawed = '/hɔd/'
-hud = '/hʌd/'
-who'd = '/hud/'
-hood = '/hʊd/'
+1. heed    =   '/hid/' 
+2. hid     =   '/hɪd/' 
+3. head    =   '/hɛd/'
+4. had     =   '/hæd/' 
+5. hod     =   '/hɑd/'
+6. hawed   =   '/hɔd/'
+7. hud     =   '/hʌd/'
+8. who'd   =   '/hud/'
+9. hood    =   '/hʊd/'
 
 Dipthongs
-how'd = '/haʊd/'
-hoyed = '/hojd/'
-hide = '/hajd/'
-hoed = '/howd/'
-height = '/hajt/'
-hayed = '/hejd/'
+10. how'd  =   '/haʊd/'
+11. hoyed  =   '/hojd/'
+12. hide   =   '/hajd/'
+13. hoed   =   '/howd/'
+14. height =   '/hajt/'
+15. hayed  =   '/hejd/'
+16. herd   =   '/hɚd/' ##is schwar technically a diphthong? dont know, dont care, dont @me, it's easier to analyze this way 
 
-Rhotic and Schwa
-herd = '/hɚd/'
-ahead = '/əhɛd/'
+Schwa
+17. ahead  =   '/əhɛd/'
 
-vowels = ['i', 'ɪ', 'ɛ', 'æ', 'ɑ', 'ɔ', 'ʌ', 'ʊ', 'u', 'aʊ', 'oj', 'aj', 'ow', 'aj', 'ej', 'ɚ', 'ə'] 
+vowels = ['i', 'ɪ', 'ɛ', 'æ', 'ɑ', 'ɔ', 'ʌ', 'u', 'ʊ', 'aʊ', 'oj', 'aj', 'ow', 'aj-t', 'ej', 'ɚ', 'ə'] 

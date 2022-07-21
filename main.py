@@ -1,39 +1,35 @@
 import parselmouth
 from parselmouth import praat
-
-from numpy import array, average
+import plotly.express as px
+from numpy import average
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
 import pandas as pd
+import plotly.graph_objects as go
+from itertools import islice
+#______________________________________________________________________________________________#
 
-## TODO: fix diphthong issue 
-## TODO: add internal recording option
-## TODO: write readme 
-# import pyaudio
-import wave
-# audio = pyaudio.PyAudio()
-# stream = audio.open(format=pyaudio.paInt16, channels = 1, rate = 44100, input = True, frames_per_buffer = 1024)
+file = '17vowelsphil2.wav'
+decible_threshold = 60  # given the nature of the words given, the decible of the /h/ sound and /d/ sounds will be far quieter than the nuclear vowel
+silence_tolerance = 0.2 # minimum length between two sounds to be considered new words 
+vowel_specificity = 5 #how much of the beginning and end of a sound is cut off 
+
+points = 5 #how many points should be created from the diphthong tragectories
+schwa_len = 3 #how long the schwa sample is, default 3 
+num_reps = 3  #how many times the words are repeated in the file default 3
 
 
-file = '17vowelstest.wav'
-decible_threshold = 50  # given the nature of the words given, the decible of the /h/ sound and /d/ sounds will be far quieter than the nuclear vowel
-silence_tolerance = 0.2
-#('m', 'w', 'o')
-speaker_gen = 'w'
-
-schwa_len = 15
-num_reps = 3  # default 3
+def means_of_slices(i, slice_size):
+    iterator = iter(i)
+    while True:
+        slice = list(islice(iterator, slice_size))
+        if slice:
+            yield sum(slice)/len(slice)
+        else:
+            return
 
 def acquire_formants(file_path, speaker_gen='w'):
   f1_list, f2_list, f3_list = [], [], []
-
-  if speaker_gen == 'w':
-      sgen = 5500
-  elif speaker_gen == 'm':
-      sgen = 5000
-  else:
-      sgen = 5250
 
   f0min, f0max = 75, 300
   sound = parselmouth.Sound.extract_part(parselmouth.Sound(file_path))
@@ -41,7 +37,7 @@ def acquire_formants(file_path, speaker_gen='w'):
       sound, "To PointProcess (periodic, cc)", f0min, f0max)
   numPoints = praat.call(pointProcess, "Get number of points")
 
-  formants = praat.call(sound, "To Formant (burg)", 0, 5, sgen, 0.1, 50)
+  formants = praat.call(sound, "To Formant (burg)", 0, 5, 5500, 0.1, 50)
 
   for point in range(0, numPoints):
       point += 1
@@ -108,7 +104,7 @@ def get_word_formants(word_list):
             parselmouth.Sound(file_path), from_time=word[0], to_time=word[1])
         formants = praat.call(sound, "To Formant (burg)", 0, 5, 5500, 0.01, 50)
 
-        f0min, f0max = 75, 300
+        f0min, f0max = 75, 310
 
         pointProcess = praat.call(
             sound, "To PointProcess (periodic, cc)", f0min, f0max)
@@ -130,7 +126,7 @@ def get_word_formants(word_list):
 
         word_dict[count] = [np.array(f1_list[4:-4]), np.array(f2_list[4:-4]), np.array(f3_list[4:-4]), np.array(
             f1_list[:schwa_len]), np.array(f2_list[:schwa_len]), np.array(f3_list[:schwa_len])]
-        # print("analysis", count, "of", len(word_list), "complete!")
+        print("analysis", count, "of", len(word_list), "complete!", end = '\r')
 
     return word_dict
 
@@ -176,6 +172,9 @@ def formant_averager(word_dict):
 
 def plot_vowels(sound_avgs): 
     f1_vals, f2_vals, f3_vals = [], [], []
+    vowels = ['ə', 'i', 'ɪ', 'ɛ', 'æ', 'ɑ', 'ɔ', 'ʌ', 'u', 'ʊ', 'aʊ', 'oj', 'aj', 'ow', 'aj-t', 'ej', 'ɚ']
+    monos = np.array(['ə', 'i', 'ɪ', 'ɛ', 'æ', 'ɑ', 'ɔ', 'ʌ', 'u', 'ʊ']) 
+    diphs = ['aʊ', 'oj', 'aj', 'ow', 'aj-t', 'ej', 'ɚ']
     
     #create x,y for monophthongs 
     for i in range(1, len(sound_avgs)+1):
@@ -183,45 +182,61 @@ def plot_vowels(sound_avgs):
         f2_vals.append(sound_avgs[i][1])
         f3_vals.append(sound_avgs[i][2])
         
-    # monoxf1 = f1_vals[-1:] + f1_vals[:9]    
-    # monoxf2 = f2_vals[-1:] + f2_vals[:9]
-    # monoxf3 = f3_vals[-1:] + f3_vals[:9]
-        
     mx, my, mz = np.array(f2_vals[-1:] + f2_vals[:9], dtype=object), np.array(f1_vals[-1:] + f1_vals[:9], dtype=object), np.array(f3_vals[-1:] + f3_vals[:9], dtype=object)
     dx, dy, dz = np.array(f2_vals[9:16], dtype=object), np.array(f1_vals[9:-1],dtype=object), np.array(f3_vals[9:-1],dtype='object')
-     
-    print(dy)
     
-    # plt.plot(dx,dy)
-    # plt.show()
+    for i in range(len(dx)):
+        num_slices = round(len(dx[i])/points)
+        meansx = list(means_of_slices(dx[i], num_slices))
+        meansy = list(means_of_slices(dy[i], num_slices))
+        meansz = list(means_of_slices(dz[i], num_slices))
+        dx[i], dy[i], dz[i] = meansx, meansy, meansz
+        
+        
+    mono_df = pd.DataFrame({'labels':monos, 'mx': mx, 'my':my, 'mz':mz})
+    diph_df = pd.DataFrame({'labels':diphs, 'dx': dx, 'dy':dy, 'dx':dz})
     
-    fig = plt.figure()
-    ax = fig.add_subplot(1, 1, 1)
+     #plotting monos
+    mono_df["mx"] = mono_df["mx"].astype(float)
+    mono_df["my"] = mono_df["my"].astype(float)
+    fig = px.scatter(mono_df, 
+                     x='mx', 
+                     y='my', 
+                     color ='my', 
+                     text="labels", 
+                     size_max=60
+                     )
+    fig.update(layout_coloraxis_showscale=False)
+    #plotting diph trajectories
+    for i in range(len(dx)):
+        fig.add_trace(go.Scatter(x=dx[i], y=dy[i],
+                        mode='lines',
+                        opacity=0.5,
+                        name=diphs[i],
+                        text=diphs[i]))
+    
+    #adding last point 
+    for i in range(len(dx)):
+        fig.add_trace(go.Scatter(x=np.array([dx[i][-1]]), y=np.array([dy[i][-1]]),
+                        mode='text+markers',
+                        name=diphs[i],
+                        text=diphs[i]))
+    
+    fil = file.removesuffix('.wav')
+    title = fil + ' formant space'
+    fig.update_traces(textposition='top center')
+    fig.update_layout(yaxis = dict(autorange="reversed"),
+                      xaxis = dict(autorange="reversed"),
+                      title=title,
+                      xaxis_title="F2",
+                      yaxis_title="F1"
+                      )
+    fig.update_layout(xaxis = {"mirror" : "allticks", 'side': 'top'}, yaxis={"mirror" : "allticks", 'side': 'right'})
+    
+    
 
-    ax.scatter(mx, my, c=mx, cmap='gist_rainbow_r', alpha=0.8)
-    
-    ax.set_ylabel('F1')
-    ax.set_xlabel('F2')
-    ax.xaxis.set_ticks_position('top')
-    ax.xaxis.set_label_position('top')
-    ax.yaxis.set_ticks_position('right')
-    ax.yaxis.set_label_position('right')
-    ax.invert_yaxis()
-    ax.invert_xaxis()
-    
-    vowels = ['ə', 'i', 'ɪ', 'ɛ', 'æ', 'ɑ', 'ɔ', 'ʌ', 'ʊ', 'u', 'aʊ', 'oj', 'aj', 'ow', 'aj-t', 'ej', 'ɚ']
-    
-    monos = ['ə', 'i', 'ɪ', 'ɛ', 'æ', 'ɑ', 'ɔ', 'ʌ', 'ʊ', 'u']
-    diphs = ['aʊ', 'oj', 'aj', 'ow', 'aj-t', 'ej', 'ɚ']
 
-    # for i in range(len(x)):
-    #     print(vowels[i], ":", x[i], y[i])
- 
-
-    for i, label in enumerate(monos):
-        plt.annotate(label, (mx[i], my[i]))
-    plt.show()
-    
+    fig.show()    
     return
 
 
@@ -236,3 +251,5 @@ word_formants = get_word_formants(word_list)
 formant_averages = formant_averager(word_formants)
 
 vowels = plot_vowels(formant_averages)
+
+
