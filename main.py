@@ -10,15 +10,17 @@ from itertools import islice
 import warnings
 #______________________________________________________________________________________________#
 
-file = ''
-decible_threshold = 56  # given the nature of the words given, the decible of the /h/ sound and /d/ sounds will be far quieter than the nuclear vowel
-silence_tolerance = 0.2 # minimum length between two sounds to be considered new words 
-vowel_specificity = 3 #how much of the beginning and end of a sound is cut off 
-vowel_specificity2 = 3 # how much end of sound is cut 
+## TODO: create recording feature GUI 
 
-roller = 4 #1-10 how smoothed should the diphthongs be? default 3
-points = 3 #how many points should be created from the diphthong tragectories, default 3
-schwa_len = 3 #how long the schwa sample is, default 3 
+file = '.wav'
+decible_threshold  = 55  # given the nature of the words given, the decible of the /h/ sound and /d/ sounds will be far quieter than the nuclear vowel
+silence_tolerance  = 0.2 # minimum length between two sounds to be considered new words 
+vowel_specificity  = 6   # how much of the beginning and end of a sound is cut off 
+vowel_specificity2 = 4   # how much end of sound is cut 
+
+roller   = 5  #3-10 how smoothed should the diphthongs be? default 3
+points   = 3  #how many points should be created from the diphthong tragectories, default 3
+shw_len  = 10 #how long the schwa sample is, default 3 
 num_reps = 3  #how many times the words are repeated in the file default 3
 
 def get_words(file_speaker): 
@@ -96,20 +98,19 @@ def get_word_formants(word_list):
             f3_list.append(f3)
         # print(len(f2_list))
         
-        vowel_spec  = round(len(f1_list)/vowel_specificity)
-        vowel_spec2 = round(len(f1_list)/vowel_specificity2)
-        vowel_spec  = round(len(f1_list)*(1/vowel_specificity)+1)
-        vowel_spec2 = round(len(f1_list)*(1/vowel_specificity2)+1)
-        # print(len(f1_list), '*', 1/vowel_specificity, '=', vowel_spec, '+1')
+        
+        vowel_spec  = round(len(f1_list)/vowel_specificity**2) + round(len(f1_list)/vowel_specificity)
+        vowel_spec2 = round(len(f1_list)/vowel_specificity2**2)
+        # print(len(f1_list), '/', vowel_specificity**2, '+', round(len(f1_list)/vowel_specificity), '=', round(len(f1_list)/vowel_specificity**2 +round(len(f1_list)/vowel_specificity)))
         
         word_dict[count] = [np.array(f1_list[vowel_spec:-vowel_spec2]), 
                             np.array(f2_list[vowel_spec:-vowel_spec2]), 
                             np.array(f3_list[vowel_spec:-vowel_spec2]), 
-                            np.array(f1_list[:schwa_len]), 
-                            np.array(f2_list[:schwa_len]), 
-                            np.array(f3_list[:schwa_len])]
+                            np.array(f1_list[:shw_len]), 
+                            np.array(f2_list[:shw_len]), 
+                            np.array(f3_list[:shw_len])]
         
-        # print("analysis", count, "of", len(word_list), "complete!", end = '\r')
+        print("analysis", count, "of", len(word_list), "complete!", end = '\r')
 
     return word_dict
 
@@ -119,7 +120,6 @@ def formant_averager(word_dict):
     shwa_dict = {}
     count = 0
 
-    # print(word_dict[1][0]) #this is [f1 arr, f2 arr, f3 arr] for first word
     #gets averages of monophtongs
     for i in range(1, len(word_dict)):  # i is the word elicitations 1-51
         count += 1
@@ -144,8 +144,8 @@ def formant_averager(word_dict):
         sound_avgs[count] = sound_avg
         
     #within sound_avgs, this overwrites vowels 10-16 
-    monophthongs = 10
-    for i in range(monophthongs, len(sound_avgs)+1): 
+
+    for i in range(10, len(sound_avgs)): 
         sound_avgs[i] = diph_dict[i]
         
     #the last sound in the recording is the schwa, so it needs to be processed
@@ -166,8 +166,8 @@ def formant_averager(word_dict):
 def plot_vowels(sound_avgs): 
     f1_vals, f2_vals, f3_vals = [], [], []
     vowels = ['ə', 'i', 'ɪ', 'ɛ', 'æ', 'ɑ', 'ɔ', 'ʌ', 'u', 'ʊ', 'aʊ', 'oɪ', 'aɪ', 'oʊ', 'aɪ-t', 'eɪ', 'ɚ']
-    monos = np.array(['ə', 'i', 'ɪ', 'ɛ', 'æ', 'ɑ', 'ɔ', 'ʌ', 'u', 'ʊ']) 
-    diphs = ['aʊ', 'oɪ', 'aɪ', 'oʊ', 'aɪ-t', 'eɪ', 'ɚ']
+    monos = np.array([ 'ɚ', 'ə', 'i', 'ɪ', 'ɛ', 'æ', 'ɑ', 'ɔ', 'ʌ', 'u', 'ʊ']) 
+    diphs = ['aʊ', 'oɪ', 'aɪ', 'oʊ', 'aɪ-t', 'eɪ']
     
     #create x,y for monophthongs 
     
@@ -176,10 +176,8 @@ def plot_vowels(sound_avgs):
         f2_vals.append(sound_avgs[i][1])
         f3_vals.append(sound_avgs[i][2])
         
-    # print(len(f1_vals))
-    
-    mx, my, mz = np.array(f2_vals[-1:] + f2_vals[:9], dtype=object), np.array(f1_vals[-1:] + f1_vals[:9], dtype=object), np.array(f3_vals[-1:] + f3_vals[:9], dtype=object)
-    dx, dy, dz = np.array(f2_vals[9:16], dtype='object'), np.array(f1_vals[9:-1],dtype=object), np.array(f3_vals[9:-1],dtype='object')
+    mx, my, mz = np.array(f2_vals[-2:] + f2_vals[:9], dtype=object), np.array(f1_vals[-2:] + f1_vals[:9], dtype=object), np.array(f3_vals[-2:] + f3_vals[:9], dtype=object)
+    dx, dy, dz = np.array(f2_vals[9:15], dtype='object'), np.array(f1_vals[9:-2],dtype=object), np.array(f3_vals[9:-2],dtype='object')
     # print(np.array(f2_vals[9:16], dtype='object'))
     
     #using rolling avgs 
@@ -240,7 +238,7 @@ def plot_vowels(sound_avgs):
     
     #adding in vowel sandcrawler    
     xmax, ymax, xmin, ymin = np.nanmax(mx), np.nanmax(my), np.nanmin(mx), np.nanmin(my)
-    tmargin, bmargin, rmargin, lmargin = 50, 100, 100, 100
+    tmargin, bmargin, rmargin, lmargin = 75, 100, 100, 100
     top_left = [xmax+lmargin, ymin-tmargin]
     bot_left = [xmax-lmargin*2, ymax+bmargin]
     bot_right = [xmin-rmargin, ymax+bmargin]
