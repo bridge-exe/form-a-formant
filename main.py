@@ -9,26 +9,19 @@ import plotly.graph_objects as go
 from itertools import islice
 #______________________________________________________________________________________________#
 
-file = '17vowelsphil2.wav'
-decible_threshold = 60  # given the nature of the words given, the decible of the /h/ sound and /d/ sounds will be far quieter than the nuclear vowel
+file = '17vowelstest5.wav'
+decible_threshold = 55  # given the nature of the words given, the decible of the /h/ sound and /d/ sounds will be far quieter than the nuclear vowel
 silence_tolerance = 0.2 # minimum length between two sounds to be considered new words 
 vowel_specificity = 5 #how much of the beginning and end of a sound is cut off 
 
-points = 5 #how many points should be created from the diphthong tragectories
+roller = 10
+#1-10 how smoothed should the diphthongs be? default 7
+points = 3 #how many points should be created from the diphthong tragectories, default 3
 schwa_len = 3 #how long the schwa sample is, default 3 
 num_reps = 3  #how many times the words are repeated in the file default 3
 
 
-def means_of_slices(i, slice_size):
-    iterator = iter(i)
-    while True:
-        slice = list(islice(iterator, slice_size))
-        if slice:
-            yield sum(slice)/len(slice)
-        else:
-            return
-
-def acquire_formants(file_path, speaker_gen='w'):
+def acquire_formants(file_path):
   f1_list, f2_list, f3_list = [], [], []
 
   f0min, f0max = 75, 300
@@ -124,8 +117,12 @@ def get_word_formants(word_list):
             f2_list.append(f2)
             f3_list.append(f3)
 
-        word_dict[count] = [np.array(f1_list[4:-4]), np.array(f2_list[4:-4]), np.array(f3_list[4:-4]), np.array(
-            f1_list[:schwa_len]), np.array(f2_list[:schwa_len]), np.array(f3_list[:schwa_len])]
+        word_dict[count] = [np.array(f1_list[vowel_specificity:-vowel_specificity]), 
+                            np.array(f2_list[vowel_specificity:-vowel_specificity]), 
+                            np.array(f3_list[vowel_specificity:-vowel_specificity]), 
+                            np.array(f1_list[:schwa_len]), 
+                            np.array(f2_list[:schwa_len]), 
+                            np.array(f3_list[:schwa_len])]
         print("analysis", count, "of", len(word_list), "complete!", end = '\r')
 
     return word_dict
@@ -170,11 +167,19 @@ def formant_averager(word_dict):
 
     return sound_avgs
 
+def means_of_slices(i, slice_size):
+    iterator = iter(i)
+    while True:
+        slice = list(islice(iterator, slice_size))
+        if slice:
+            yield sum(slice)/len(slice)
+        else:
+            return
 def plot_vowels(sound_avgs): 
     f1_vals, f2_vals, f3_vals = [], [], []
-    vowels = ['ə', 'i', 'ɪ', 'ɛ', 'æ', 'ɑ', 'ɔ', 'ʌ', 'u', 'ʊ', 'aʊ', 'oj', 'aj', 'ow', 'aj-t', 'ej', 'ɚ']
+    vowels = ['ə', 'i', 'ɪ', 'ɛ', 'æ', 'ɑ', 'ɔ', 'ʌ', 'u', 'ʊ', 'aʊ', 'oɪ', 'aɪ', 'oʊ', 'aɪ-t', 'eɪ', 'ɚ']
     monos = np.array(['ə', 'i', 'ɪ', 'ɛ', 'æ', 'ɑ', 'ɔ', 'ʌ', 'u', 'ʊ']) 
-    diphs = ['aʊ', 'oj', 'aj', 'ow', 'aj-t', 'ej', 'ɚ']
+    diphs = ['aʊ', 'oɪ', 'aɪ', 'oʊ', 'aɪ-t', 'eɪ', 'ɚ']
     
     #create x,y for monophthongs 
     for i in range(1, len(sound_avgs)+1):
@@ -183,19 +188,35 @@ def plot_vowels(sound_avgs):
         f3_vals.append(sound_avgs[i][2])
         
     mx, my, mz = np.array(f2_vals[-1:] + f2_vals[:9], dtype=object), np.array(f1_vals[-1:] + f1_vals[:9], dtype=object), np.array(f3_vals[-1:] + f3_vals[:9], dtype=object)
-    dx, dy, dz = np.array(f2_vals[9:16], dtype=object), np.array(f1_vals[9:-1],dtype=object), np.array(f3_vals[9:-1],dtype='object')
+    dx, dy, dz = np.array(f2_vals[9:16], dtype='object'), np.array(f1_vals[9:-1],dtype=object), np.array(f3_vals[9:-1],dtype='object')
     
+    #using rolling avgs 
+    diph_df = pd.DataFrame({'labels':diphs, 'dx':dx, 'dy':dy, 'dz':dz})
     for i in range(len(dx)):
-        num_slices = round(len(dx[i])/points)
-        meansx = list(means_of_slices(dx[i], num_slices))
-        meansy = list(means_of_slices(dy[i], num_slices))
-        meansz = list(means_of_slices(dz[i], num_slices))
-        dx[i], dy[i], dz[i] = meansx, meansy, meansz
+        roll = round(len(dx[i])/roller)*4
+        rollx = pd.Series(dx[i]).rolling(roll).mean()
+        rolly = pd.Series(dy[i]).rolling(roll).mean()
+        rollz = pd.Series(dz[i]).rolling(roll).mean()
+
+        dx[i], dy[i], dz[i] = list(rollx),list(rolly),list(rollz)
+        
+        
+        
+      #uses slice window averages to get n-points to graph 
+    # for i in range(len(dx)):
+    #     slice_len = round(len(dx[i])/points)
+        
+    #     meansx = list(means_of_slices(dx[i], slice_len))
+    #     meansy = list(means_of_slices(dy[i], slice_len))
+    #     meansz = list(means_of_slices(dz[i], slice_len))
+        
+    #     dx[i], dy[i], dz[i] = meansx, meansy, meansz
+        
+        # print(len(dx[i]), len(dy[i]))
         
         
     mono_df = pd.DataFrame({'labels':monos, 'mx': mx, 'my':my, 'mz':mz})
-    diph_df = pd.DataFrame({'labels':diphs, 'dx': dx, 'dy':dy, 'dx':dz})
-    
+   
      #plotting monos
     mono_df["mx"] = mono_df["mx"].astype(float)
     mono_df["my"] = mono_df["my"].astype(float)
@@ -223,7 +244,7 @@ def plot_vowels(sound_avgs):
                         text=diphs[i]))
     
     fil = file.removesuffix('.wav')
-    title = fil + ' formant space'
+    title = fil + ' Vowel Space'
     fig.update_traces(textposition='top center')
     fig.update_layout(yaxis = dict(autorange="reversed"),
                       xaxis = dict(autorange="reversed"),

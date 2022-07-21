@@ -3,7 +3,7 @@ Monopthongs
 2. hid     =   '/hɪd/' 
 3. head    =   '/hɛd/'
 4. had     =   '/hæd/' 
-5. hod     =   '/hɑd/'
+5. hot     =   '/hɑd/'
 6. hawed   =   '/hɔd/'
 7. hud     =   '/hʌd/'
 8. who'd   =   '/hud/'
@@ -11,8 +11,8 @@ Monopthongs
 
 Dipthongs
 10. how'd  =   '/haʊd/'
-11. hoyed  =   '/hojd/'
-12. hide   =   '/hajd/'
+11. hoyed  =   '/hoɪd/'
+12. hide   =   '/haɪd/'
 13. hoed   =   '/howd/'
 14. height =   '/hajt/'
 15. hayed  =   '/hejd/'
@@ -21,4 +21,4 @@ Dipthongs
 Schwa
 17. ahead  =   '/əhɛd/'
 
-vowels = ['i', 'ɪ', 'ɛ', 'æ', 'ɑ', 'ɔ', 'ʌ', 'u', 'ʊ', 'aʊ', 'oj', 'aj', 'ow', 'aj-t', 'ej', 'ɚ', 'ə'] 
+vowels = ['i', 'ɪ', 'ɛ', 'æ', 'ɑ', 'ɔ', 'ʌ', 'u', 'ʊ', 'aʊ', 'oɪ', 'aɪ', 'oʊ', 'aɪ-t', 'eɪ', 'ɚ', 'ə'] 
