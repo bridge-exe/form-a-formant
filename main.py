@@ -9,40 +9,15 @@ import plotly.graph_objects as go
 from itertools import islice
 #______________________________________________________________________________________________#
 
-file = '17vowelstest5.wav'
+file = '17vowelsphil2.wav'
 decible_threshold = 55  # given the nature of the words given, the decible of the /h/ sound and /d/ sounds will be far quieter than the nuclear vowel
 silence_tolerance = 0.2 # minimum length between two sounds to be considered new words 
 vowel_specificity = 5 #how much of the beginning and end of a sound is cut off 
 
-roller = 10
-#1-10 how smoothed should the diphthongs be? default 7
+roller = 10 #1-10 how smoothed should the diphthongs be? default 7
 points = 3 #how many points should be created from the diphthong tragectories, default 3
 schwa_len = 3 #how long the schwa sample is, default 3 
 num_reps = 3  #how many times the words are repeated in the file default 3
-
-
-def acquire_formants(file_path):
-  f1_list, f2_list, f3_list = [], [], []
-
-  f0min, f0max = 75, 300
-  sound = parselmouth.Sound.extract_part(parselmouth.Sound(file_path))
-  pointProcess = praat.call(
-      sound, "To PointProcess (periodic, cc)", f0min, f0max)
-  numPoints = praat.call(pointProcess, "Get number of points")
-
-  formants = praat.call(sound, "To Formant (burg)", 0, 5, 5500, 0.1, 50)
-
-  for point in range(0, numPoints):
-      point += 1
-      t = praat.call(pointProcess, "Get time from index", point)
-      f1 = praat.call(formants, "Get value at time", 1, t, 'Hertz', 'Linear')
-      f2 = praat.call(formants, "Get value at time", 2, t, 'Hertz', 'Linear')
-      f3 = praat.call(formants, "Get value at time", 3, t, 'Hertz', 'Linear')
-      f1_list.append(f1)
-      f2_list.append(f2)
-      f3_list.append(f3)
-
-  return f1_list, f2_list, f3_list
 
 def get_words(file_speaker):
     ##using the intensity of the sound, we will find where the words are said,
@@ -175,6 +150,7 @@ def means_of_slices(i, slice_size):
             yield sum(slice)/len(slice)
         else:
             return
+
 def plot_vowels(sound_avgs): 
     f1_vals, f2_vals, f3_vals = [], [], []
     vowels = ['ə', 'i', 'ɪ', 'ɛ', 'æ', 'ɑ', 'ɔ', 'ʌ', 'u', 'ʊ', 'aʊ', 'oɪ', 'aɪ', 'oʊ', 'aɪ-t', 'eɪ', 'ɚ']
@@ -254,23 +230,11 @@ def plot_vowels(sound_avgs):
                       )
     fig.update_layout(xaxis = {"mirror" : "allticks", 'side': 'top'}, yaxis={"mirror" : "allticks", 'side': 'right'})
     
-    
-
-
     fig.show()    
     return
 
-
 file_path = 'c:/Users/bridg/Documents/GitHub/form-a-formant/' + file
-# formants = acquire_formants(file_path)
-# formants = add_formants(acquire_formants(file_path))
-
 word_list = get_words(file_path)
-
 word_formants = get_word_formants(word_list)
-
 formant_averages = formant_averager(word_formants)
-
 vowels = plot_vowels(formant_averages)
-
-
