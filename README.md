@@ -38,7 +38,10 @@ Not perfect, but alright.
 
 
 This project is possible thanks to the plotly and parselmouth libraries, and the almighty Praat software. 
+
 Plotly: plotly.com/python/
+
 Parselmouth: parselmouth.readthedocs.io/en/stable/
+
 Praat: www.fon.hum.uva.nl/praat/
 
