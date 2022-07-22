@@ -30,8 +30,7 @@ Diphthongs: /aʊ, oɪ, aɪ, oʊ, aɪ-t, eɪ/
 
 Finally, it will plot out your vowel sounds on a dynamic vowel chart, which will look something like this:
 
-![newplot(1)](https://user-images.githubusercontent.com/62908125/180327251-c77ab91d-9924-4ca7-ac15-f3455b9d5535.png)
-
+![image](https://user-images.githubusercontent.com/62908125/180579303-5fc541fe-48ca-4864-b410-a982b6dd9010.png)
 
 Pretty cool? 
 
