@@ -25,17 +25,20 @@ All that is needed is to record yourself saying each of the following words thre
 As in: "heed, heed, heed, hid, hid, hid... ahead, ahead, ahead"
 
 Then the program will automatically detect the average formant values for each of your monophthongs, and the trajectories of your diphthongs! 
+
 Monophthongs: /i, ɪ, ɛ, æ, ɑ, ɔ, ʌ, u, ʊ, ɚ, ə/ 
+
 Diphthongs: /aʊ, oɪ, aɪ, oʊ, aɪ-t, eɪ/ 
 
 Finally, it will plot out your vowel sounds on a dynamic vowel chart, which will look something like this:
 
-![image](https://user-images.githubusercontent.com/62908125/180579303-5fc541fe-48ca-4864-b410-a982b6dd9010.png)
+<img width="1347" alt="image" src="https://user-images.githubusercontent.com/62908125/194472303-5ec3b2db-6b75-4082-8b32-f28e6fddac7c.png">
 
-Pretty cool? 
 
-Not perfect, but alright. 
 
+Pretty cool? You can even see how the diphthongs draw out the Vowel Triangle! 
+
+Not perfect, but alright.
 
 This project is possible thanks to the plotly and parselmouth libraries, and the almighty Praat software. 
 
