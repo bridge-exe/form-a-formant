@@ -2,7 +2,7 @@
  
 Have you ever wanted to visualize your own personal idiolect? Amaze your friends by showing them your precise vocal range? No? Look no further. Using this simple minute-long test, you can create your own personal vowel chart! 
 
-All that is needed is to record yourself saying each of the following words three times: 
+All that is needed is to record yourself saying each of the following words three times, WITH CLEAR, DISTINCT BREAKS INBETWEEN THE WORDS: 
 
 #### 1. heed    =   '/hid/' 
 #### 2. hid     =   '/hɪd/' 
